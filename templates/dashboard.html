@@ -1,0 +1,400 @@
+{% extends "base.html" %}
+
+{% block title %}校园地图 - 校园数字游民活地图{% endblock %}
+
+{% block extra_css %}
+<style>
+.map-container {
+    position: relative;
+    height: 600px;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #f8f9fa;
+}
+
+.campus-map {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    background: url('/static/images/campus_map.svg') no-repeat center center;
+    background-size: contain;
+    border-radius: 8px;
+}
+
+.space-marker {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+.space-marker:hover {
+    transform: scale(1.2);
+    z-index: 20;
+}
+
+.space-marker.crowding-1 { background-color: #28a745; }
+.space-marker.crowding-2 { background-color: #ffc107; }
+.space-marker.crowding-3 { background-color: #fd7e14; }
+.space-marker.crowding-4 { background-color: #dc3545; }
+.space-marker.crowding-5 { background-color: #6f42c1; }
+
+.filter-panel {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.space-info-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.crowding-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.report-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 1000;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- 页面标题栏 -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="mb-1">
+                    <i class="fas fa-map-marked-alt me-2 text-primary"></i>
+                    校园空间实时地图
+                </h2>
+                <p class="text-muted mb-0">
+                    <i class="fas fa-info-circle me-1"></i>
+                    查看校园各空间的实时状态，找到最适合你的学习场所
+                </p>
+            </div>
+            <div>
+                <button class="btn btn-outline-primary me-2" onclick="refreshMap()" title="刷新地图数据">
+                    <i class="fas fa-sync-alt me-1"></i>刷新
+                </button>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#reportModal" title="快速上报空间状态">
+                    <i class="fas fa-plus-circle me-1"></i>快速上报
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 筛选面板 -->
+    <div class="col-md-3">
+        <div class="filter-panel p-3 mb-4">
+            <h5 class="mb-3">
+                <i class="fas fa-filter me-2"></i>筛选条件
+            </h5>
+            
+            <div class="mb-3">
+                <label class="form-label">空间类型</label>
+                <select class="form-select" id="spaceTypeFilter">
+                    <option value="">全部类型</option>
+                    <option value="自习室">自习室</option>
+                    <option value="讨论室">讨论室</option>
+                    <option value="咖啡厅">咖啡厅</option>
+                    <option value="图书馆">图书馆</option>
+                </select>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">拥挤程度</label>
+                <select class="form-select" id="crowdingFilter">
+                    <option value="">不限</option>
+                    <option value="1">很空闲</option>
+                    <option value="2">较空闲</option>
+                    <option value="3">一般</option>
+                    <option value="4">较拥挤</option>
+                    <option value="5">很拥挤</option>
+                </select>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">特殊需求</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="powerAvailable">
+                    <label class="form-check-label" for="powerAvailable">
+                        有电源插座
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="quietSpace">
+                    <label class="form-check-label" for="quietSpace">
+                        安静环境
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="goodWifi">
+                    <label class="form-check-label" for="goodWifi">
+                        网速良好
+                    </label>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary w-100" onclick="applyFilters()">
+                <i class="fas fa-search me-2"></i>应用筛选
+            </button>
+        </div>
+        
+        <!-- 图例 -->
+        <div class="filter-panel p-3">
+            <h6 class="mb-3">拥挤程度图例</h6>
+            <div class="mb-2">
+                <span class="crowding-indicator" style="background-color: #28a745;"></span>
+                很空闲
+            </div>
+            <div class="mb-2">
+                <span class="crowding-indicator" style="background-color: #ffc107;"></span>
+                较空闲
+            </div>
+            <div class="mb-2">
+                <span class="crowding-indicator" style="background-color: #fd7e14;"></span>
+                一般
+            </div>
+            <div class="mb-2">
+                <span class="crowding-indicator" style="background-color: #dc3545;"></span>
+                较拥挤
+            </div>
+            <div class="mb-2">
+                <span class="crowding-indicator" style="background-color: #6f42c1;"></span>
+                很拥挤
+            </div>
+        </div>
+    </div>
+    
+    <!-- 地图区域 -->
+    <div class="col-md-6">
+        <div class="map-container">
+            <div class="campus-map" id="campusMap">
+                <!-- 空间标记点将通过JavaScript动态添加 -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- 空间信息面板 -->
+    <div class="col-md-3">
+        <div class="space-info-card p-3" id="spaceInfoPanel">
+            <div class="text-center text-muted py-5">
+                <i class="fas fa-mouse-pointer fa-3x mb-3"></i>
+                <p>点击地图上的标记点<br>查看空间详细信息</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 上报按钮 -->
+<button class="btn btn-success btn-lg report-btn" data-bs-toggle="modal" data-bs-target="#reportModal">
+    <i class="fas fa-plus me-2"></i>上报空间状态
+</button>
+
+<!-- 上报模态框 -->
+<div class="modal fade" id="reportModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-map-pin me-2"></i>上报空间状态
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="reportForm">
+                    <div class="mb-3">
+                        <label class="form-label">选择空间</label>
+                        <select class="form-select" id="spaceSelect" required>
+                            <option value="">请选择空间</option>
+                            {% for space in spaces %}
+                            <option value="{{ space.id }}">{{ space.building }} - {{ space.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">拥挤程度</label>
+                        <select class="form-select" id="crowdingLevel" required>
+                            <option value="">请选择</option>
+                            <option value="1">很空闲</option>
+                            <option value="2">较空闲</option>
+                            <option value="3">一般</option>
+                            <option value="4">较拥挤</option>
+                            <option value="5">很拥挤</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">噪音水平</label>
+                        <select class="form-select" id="noiseLevel" required>
+                            <option value="">请选择</option>
+                            <option value="1">很安静</option>
+                            <option value="2">较安静</option>
+                            <option value="3">一般</option>
+                            <option value="4">较嘈杂</option>
+                            <option value="5">很嘈杂</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">网速质量</label>
+                        <select class="form-select" id="wifiQuality" required>
+                            <option value="">请选择</option>
+                            <option value="1">很差</option>
+                            <option value="2">较差</option>
+                            <option value="3">一般</option>
+                            <option value="4">较好</option>
+                            <option value="5">很好</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="powerAvailableReport">
+                            <label class="form-check-label" for="powerAvailableReport">
+                                有可用电源插座
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">补充说明</label>
+                        <textarea class="form-control" id="comment" rows="3" placeholder="可以添加一些额外的信息..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-success" onclick="submitReport()">
+                    <i class="fas fa-paper-plane me-2"></i>提交上报
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// 模拟空间数据
+const spacesData = [
+    {id: 1, name: '图书馆', building: '图书馆', x: 15.6, y: 16.7, crowding: 3, noise: 2, wifi: 4, power: true},
+    {id: 2, name: 'A301自习室', building: 'A座教学楼', x: 38.8, y: 15.0, crowding: 2, noise: 1, wifi: 5, power: true},
+    {id: 3, name: 'B201讨论室', building: 'B座教学楼', x: 57.5, y: 15.0, crowding: 4, noise: 3, wifi: 4, power: true},
+    {id: 4, name: '星巴克', building: '咖啡厅', x: 12.5, y: 40.0, crowding: 3, noise: 4, wifi: 3, power: false},
+    {id: 5, name: '活动中心自习区', building: '学生活动中心', x: 34.4, y: 41.7, crowding: 1, noise: 2, wifi: 4, power: true}
+];
+
+// 初始化地图
+function initMap() {
+    const mapElement = document.getElementById('campusMap');
+    
+    spacesData.forEach(space => {
+        const marker = document.createElement('div');
+        marker.className = `space-marker crowding-${space.crowding}`;
+        marker.style.left = `${space.x}%`;
+        marker.style.top = `${space.y}%`;
+        marker.title = space.name;
+        marker.onclick = () => showSpaceInfo(space);
+        
+        mapElement.appendChild(marker);
+    });
+}
+
+// 显示空间信息
+function showSpaceInfo(space) {
+    const panel = document.getElementById('spaceInfoPanel');
+    const crowdingText = ['', '很空闲', '较空闲', '一般', '较拥挤', '很拥挤'][space.crowding];
+    const noiseText = ['', '很安静', '较安静', '一般', '较嘈杂', '很嘈杂'][space.noise];
+    const wifiText = ['', '很差', '较差', '一般', '较好', '很好'][space.wifi];
+    
+    panel.innerHTML = `
+        <h5 class="mb-3">${space.name}</h5>
+        <p class="text-muted mb-3">${space.building}</p>
+        
+        <div class="mb-3">
+            <div class="d-flex justify-content-between mb-2">
+                <span>拥挤程度:</span>
+                <span class="badge bg-${getCrowdingColor(space.crowding)}">${crowdingText}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+                <span>噪音水平:</span>
+                <span>${noiseText}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+                <span>网速质量:</span>
+                <span>${wifiText}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+                <span>电源插座:</span>
+                <span class="badge bg-${space.power ? 'success' : 'secondary'}">
+                    ${space.power ? '可用' : '不可用'}
+                </span>
+            </div>
+        </div>
+        
+        <div class="text-muted small">
+            <i class="fas fa-clock me-1"></i>
+            最后更新: 5分钟前
+        </div>
+        
+        <button class="btn btn-outline-primary btn-sm mt-3 w-100">
+            <i class="fas fa-route me-2"></i>获取路线
+        </button>
+    `;
+}
+
+function getCrowdingColor(level) {
+    const colors = ['', 'success', 'warning', 'info', 'warning', 'danger'];
+    return colors[level];
+}
+
+// 提交上报
+function submitReport() {
+    const form = document.getElementById('reportForm');
+    const formData = new FormData(form);
+    
+    // 这里应该发送AJAX请求到后端
+    alert('上报成功！感谢您的贡献，您获得了10积分！');
+    
+    // 关闭模态框
+    const modal = bootstrap.Modal.getInstance(document.getElementById('reportModal'));
+    modal.hide();
+    
+    // 重置表单
+    form.reset();
+}
+
+// 应用筛选
+function applyFilters() {
+    // 这里实现筛选逻辑
+    console.log('应用筛选条件');
+}
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', function() {
+    initMap();
+});
+</script>
+{% endblock %}
