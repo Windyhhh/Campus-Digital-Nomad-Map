@@ -1,0 +1,760 @@
+{% extends "base.html" %}
+
+{% block title %}校园活地图 - 东北大学浑南校区{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* 现代化设计风格 */
+    :root {
+        --primary-color: #4F46E5;
+        --secondary-color: #10B981;
+        --danger-color: #EF4444;
+        --warning-color: #F59E0B;
+        --info-color: #3B82F6;
+        --dark-color: #1F2937;
+        --light-color: #F9FAFB;
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+    }
+
+    /* 顶部工具栏 */
+    .top-toolbar {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        box-shadow: var(--shadow-lg);
+        padding: 1rem 0;
+        position: sticky;
+        top: 56px;
+        z-index: 1000;
+    }
+
+    .toolbar-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .search-box {
+        flex: 1;
+        min-width: 300px;
+        position: relative;
+    }
+
+    .search-box input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 3rem;
+        border: 2px solid #E5E7EB;
+        border-radius: 50px;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+    }
+
+    .search-box input:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        outline: none;
+    }
+
+    .search-box i {
+        position: absolute;
+        left: 1.2rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9CA3AF;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .btn-modern {
+        padding: 0.75rem 1.5rem;
+        border-radius: 50px;
+        font-weight: 600;
+        border: none;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: var(--shadow-md);
+    }
+
+    .btn-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .btn-primary-modern {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #6366F1 100%);
+        color: white;
+    }
+
+    .btn-success-modern {
+        background: linear-gradient(135deg, var(--secondary-color) 0%, #059669 100%);
+        color: white;
+    }
+
+    /* 主容器 */
+    .main-container {
+        display: grid;
+        grid-template-columns: 350px 1fr;
+        gap: 1.5rem;
+        padding: 1.5rem 0;
+        height: calc(100vh - 200px);
+    }
+
+    /* 侧边栏 */
+    .sidebar-panel {
+        background: white;
+        border-radius: 20px;
+        box-shadow: var(--shadow-xl);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .panel-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #6366F1 100%);
+        color: white;
+        padding: 1.5rem;
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+
+    .panel-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem;
+    }
+
+    /* 筛选器 */
+    .filter-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .filter-label {
+        font-weight: 600;
+        color: var(--dark-color);
+        margin-bottom: 0.75rem;
+        display: block;
+        font-size: 0.9rem;
+    }
+
+    .filter-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .chip {
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        border: 2px solid #E5E7EB;
+        background: white;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    .chip:hover {
+        border-color: var(--primary-color);
+        background: #EEF2FF;
+    }
+
+    .chip.active {
+        background: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+    }
+
+    /* 地图容器 */
+    .map-container {
+        background: white;
+        border-radius: 20px;
+        box-shadow: var(--shadow-xl);
+        overflow: hidden;
+        position: relative;
+    }
+
+    #amap-container {
+        width: 100%;
+        height: 100%;
+        border-radius: 20px;
+    }
+
+    /* 空间列表 */
+    .space-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .space-card {
+        background: #F9FAFB;
+        border-radius: 12px;
+        padding: 1rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        border: 2px solid transparent;
+    }
+
+    .space-card:hover {
+        background: white;
+        border-color: var(--primary-color);
+        box-shadow: var(--shadow-md);
+        transform: translateX(5px);
+    }
+
+    .space-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .space-name {
+        font-weight: 600;
+        color: var(--dark-color);
+        font-size: 0.95rem;
+    }
+
+    .space-status {
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .status-free {
+        background: #D1FAE5;
+        color: #065F46;
+    }
+
+    .status-moderate {
+        background: #FEF3C7;
+        color: #92400E;
+    }
+
+    .status-crowded {
+        background: #FEE2E2;
+        color: #991B1B;
+    }
+
+    .space-meta {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.8rem;
+        color: #6B7280;
+    }
+
+    .space-meta i {
+        margin-right: 0.25rem;
+    }
+
+    /* 浮动信息面板 */
+    .floating-info {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: var(--shadow-xl);
+        min-width: 300px;
+        max-width: 400px;
+        display: none;
+        z-index: 1000;
+    }
+
+    .floating-info.show {
+        display: block;
+        animation: slideInRight 0.3s ease-out;
+    }
+
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    /* 响应式设计 */
+    @media (max-width: 992px) {
+        .main-container {
+            grid-template-columns: 1fr;
+            height: auto;
+        }
+
+        .sidebar-panel {
+            max-height: 400px;
+        }
+
+        .map-container {
+            height: 500px;
+        }
+    }
+
+    /* 加载动画 */
+    .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+    }
+
+    .spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid #E5E7EB;
+        border-top-color: var(--primary-color);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- 顶部工具栏 -->
+<div class="top-toolbar">
+    <div class="container">
+        <div class="toolbar-content">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="搜索空间名称、位置..." />
+            </div>
+            <div class="action-buttons">
+                <button class="btn btn-modern btn-success-modern" onclick="showReportModal()">
+                    <i class="fas fa-plus-circle"></i>
+                    快速上报
+                </button>
+                <button class="btn btn-modern btn-primary-modern" onclick="refreshMapData()">
+                    <i class="fas fa-sync-alt"></i>
+                    刷新
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 主容器 -->
+<div class="container">
+    <div class="main-container">
+        <!-- 侧边栏 -->
+        <div class="sidebar-panel">
+            <div class="panel-header">
+                <i class="fas fa-filter me-2"></i>筛选与空间列表
+            </div>
+            <div class="panel-body">
+                <!-- 筛选器 -->
+                <div class="filter-group">
+                    <label class="filter-label">空间类型</label>
+                    <div class="filter-chips">
+                        <div class="chip active" data-filter="type" data-value="all">全部</div>
+                        <div class="chip" data-filter="type" data-value="图书馆">图书馆</div>
+                        <div class="chip" data-filter="type" data-value="自习室">自习室</div>
+                        <div class="chip" data-filter="type" data-value="讨论室">讨论室</div>
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">拥挤程度</label>
+                    <div class="filter-chips">
+                        <div class="chip active" data-filter="crowding" data-value="all">全部</div>
+                        <div class="chip" data-filter="crowding" data-value="1-2">空闲</div>
+                        <div class="chip" data-filter="crowding" data-value="3">一般</div>
+                        <div class="chip" data-filter="crowding" data-value="4-5">拥挤</div>
+                    </div>
+                </div>
+
+                <hr style="margin: 1.5rem 0; border-color: #E5E7EB;">
+
+                <!-- 空间列表 -->
+                <div class="space-list" id="spaceList">
+                    <!-- 动态加载 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 地图容器 -->
+        <div class="map-container">
+            <div id="amap-container"></div>
+            <div class="loading-overlay" id="loadingOverlay">
+                <div class="spinner"></div>
+            </div>
+
+            <!-- 浮动信息面板 -->
+            <div class="floating-info" id="floatingInfo">
+                <h5 id="infoTitle"></h5>
+                <div id="infoContent"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- 高德地图API - 带有降级方案 -->
+<script>
+// 检测高德地图API是否可用
+let useAMap = true;
+let map = null;
+let markers = [];
+let spacesData = [];
+
+// 尝试加载高德地图API
+function loadAmapAPI() {
+    return new Promise((resolve) => {
+        // 设置超时
+        const timeout = setTimeout(() => {
+            console.warn('高德地图API加载超时，将使用模拟地图');
+            useAMap = false;
+            resolve(false);
+        }, 5000);
+
+        // 创建script标签
+        const script = document.createElement('script');
+        script.src = 'https://webapi.amap.com/maps?v=2.0&key={{ amap_key }}';
+        script.onload = () => {
+            clearTimeout(timeout);
+            console.log('高德地图API加载成功');
+            useAMap = true;
+            resolve(true);
+        };
+        script.onerror = () => {
+            clearTimeout(timeout);
+            console.warn('高德地图API加载失败，将使用模拟地图');
+            useAMap = false;
+            resolve(false);
+        };
+        document.head.appendChild(script);
+    });
+}
+
+// 初始化地图
+async function initMap() {
+    // 先尝试加载高德地图API
+    const amapLoaded = await loadAmapAPI();
+
+    if (amapLoaded && typeof AMap !== 'undefined') {
+        // 使用高德地图
+        initAmapMap();
+    } else {
+        // 降级到模拟地图
+        initSimulatedMap();
+    }
+
+    // 加载数据
+    loadSpacesData();
+}
+
+// 初始化高德地图
+function initAmapMap() {
+    try {
+        map = new AMap.Map('amap-container', {
+            zoom: 16,
+            center: [123.4644, 41.6698], // 东北大学浑南校区
+            mapStyle: 'amap://styles/whitesmoke',
+            viewMode: '3D',
+            pitch: 45
+        });
+
+        // 添加控件
+        map.addControl(new AMap.Scale());
+        map.addControl(new AMap.ToolBar());
+        map.addControl(new AMap.HawkEye());
+
+        // 标记为使用真实地图
+        document.getElementById('amap-container').setAttribute('data-map-type', 'amap');
+    } catch (error) {
+        console.error('高德地图初始化失败:', error);
+        initSimulatedMap();
+    }
+}
+
+// 初始化模拟地图（SVG）
+function initSimulatedMap() {
+    const container = document.getElementById('amap-container');
+    container.innerHTML = `
+        <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; flex-direction: column;">
+            <div style="background: white; padding: 2rem; border-radius: 10px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                <i class="fas fa-map" style="font-size: 3rem; color: #667eea; margin-bottom: 1rem;"></i>
+                <h3 style="color: #333; margin: 1rem 0;">模拟地图</h3>
+                <p style="color: #666; margin-bottom: 1rem;">高德地图API暂不可用，已切换到模拟地图模式</p>
+                <div id="simulated-space-list" style="text-align: left; max-height: 400px; overflow-y: auto;"></div>
+            </div>
+        </div>
+    `;
+    container.setAttribute('data-map-type', 'simulated');
+}
+
+// 加载空间数据
+async function loadSpacesData() {
+    try {
+        const response = await fetch('/api/spaces');
+        spacesData = await response.json();
+        renderMarkers();
+        renderSpaceList();
+        hideLoading();
+    } catch (error) {
+        console.error('加载数据失败:', error);
+        hideLoading();
+    }
+}
+
+// 渲染地图标记
+function renderMarkers() {
+    const mapType = document.getElementById('amap-container').getAttribute('data-map-type');
+
+    if (mapType === 'amap') {
+        // 使用高德地图标记
+        renderAmapMarkers();
+    } else {
+        // 使用模拟地图列表
+        renderSimulatedMarkers();
+    }
+}
+
+// 渲染高德地图标记
+function renderAmapMarkers() {
+    // 清除旧标记
+    markers.forEach(marker => marker.setMap(null));
+    markers = [];
+
+    spacesData.forEach(space => {
+        const marker = new AMap.Marker({
+            position: space.coordinates || [123.4644 + Math.random() * 0.01, 41.6698 + Math.random() * 0.01],
+            title: space.name,
+            icon: getMarkerIcon(space.crowding || 1),
+            offset: new AMap.Pixel(-15, -30)
+        });
+
+        marker.on('click', () => showSpaceInfo(space));
+        marker.setMap(map);
+        markers.push(marker);
+    });
+}
+
+// 渲染模拟地图列表
+function renderSimulatedMarkers() {
+    const listContainer = document.getElementById('simulated-space-list');
+    if (!listContainer) return;
+
+    listContainer.innerHTML = spacesData.map(space => `
+        <div style="padding: 0.75rem; border-bottom: 1px solid #eee; cursor: pointer; transition: all 0.2s;"
+             onmouseover="this.style.backgroundColor='#f0f0f0'"
+             onmouseout="this.style.backgroundColor='transparent'"
+             onclick="showSpaceInfo(${JSON.stringify(space).replace(/"/g, '&quot;')})">
+            <div style="font-weight: 600; color: #333;">${space.name}</div>
+            <div style="font-size: 0.85rem; color: #666;">
+                <i class="fas fa-map-marker-alt"></i> ${space.building || '未知'} ${space.floor || ''}
+            </div>
+            <div style="font-size: 0.85rem; color: #999;">
+                容量: ${space.capacity}人 | 拥挤度: ${getCrowdingText(space.crowding || 1)}
+            </div>
+        </div>
+    `).join('');
+}
+
+// 获取标记图标
+function getMarkerIcon(crowding) {
+    const colors = {
+        1: '#10B981',
+        2: '#3B82F6',
+        3: '#F59E0B',
+        4: '#EF4444',
+        5: '#991B1B'
+    };
+    const color = colors[Math.round(crowding)] || '#6B7280';
+    return `data:image/svg+xml,${encodeURIComponent(`
+        <svg width="30" height="40" xmlns="http://www.w3.org/2000/svg">
+            <path d="M15 0C6.716 0 0 6.716 0 15c0 11.25 15 25 15 25s15-13.75 15-25c0-8.284-6.716-15-15-15z" fill="${color}"/>
+            <circle cx="15" cy="15" r="8" fill="white"/>
+        </svg>
+    `)}`;
+}
+
+// 显示空间信息
+function showSpaceInfo(space) {
+    const info = document.getElementById('floatingInfo');
+    document.getElementById('infoTitle').textContent = space.name;
+    document.getElementById('infoContent').innerHTML = `
+        <p><strong>类型:</strong> ${space.type}</p>
+        <p><strong>位置:</strong> ${space.location}</p>
+        <p><strong>拥挤度:</strong> ${getCrowdingText(space.avg_crowding)}</p>
+        <p><strong>容量:</strong> ${space.capacity}人</p>
+        <button class="btn btn-primary btn-sm mt-2" onclick="navigateToSpace(${space.id})">
+            <i class="fas fa-route me-1"></i>导航到这里
+        </button>
+    `;
+    info.classList.add('show');
+}
+
+// 获取拥挤度文本
+function getCrowdingText(level) {
+    const texts = ['', '很空闲', '较空闲', '一般', '较拥挤', '很拥挤'];
+    return texts[Math.round(level)] || '未知';
+}
+
+// 隐藏加载动画
+function hideLoading() {
+    document.getElementById('loadingOverlay').style.display = 'none';
+}
+
+// 渲染空间列表
+function renderSpaceList() {
+    const listContainer = document.getElementById('spaceList');
+    listContainer.innerHTML = spacesData.map(space => `
+        <div class="space-card" onclick="focusOnSpace(${space.id})">
+            <div class="space-card-header">
+                <span class="space-name">${space.name}</span>
+                <span class="space-status ${getStatusClass(space.avg_crowding)}">
+                    ${getCrowdingText(space.avg_crowding)}
+                </span>
+            </div>
+            <div class="space-meta">
+                <span><i class="fas fa-map-marker-alt"></i>${space.location}</span>
+                <span><i class="fas fa-users"></i>${space.capacity}人</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+// 获取状态样式类
+function getStatusClass(level) {
+    if (level <= 2) return 'status-free';
+    if (level <= 3) return 'status-moderate';
+    return 'status-crowded';
+}
+
+// 聚焦到空间
+function focusOnSpace(spaceId) {
+    const space = spacesData.find(s => s.id === spaceId);
+    if (space && space.coordinates) {
+        map.setZoomAndCenter(18, space.coordinates);
+        showSpaceInfo(space);
+    }
+}
+
+// 筛选功能
+document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('chip')) {
+        const filterType = e.target.dataset.filter;
+        const filterValue = e.target.dataset.value;
+
+        // 更新选中状态
+        document.querySelectorAll(`[data-filter="${filterType}"]`).forEach(chip => {
+            chip.classList.remove('active');
+        });
+        e.target.classList.add('active');
+
+        // 应用筛选
+        applyFilters();
+    }
+});
+
+// 应用筛选
+function applyFilters() {
+    const typeFilter = document.querySelector('[data-filter="type"].active').dataset.value;
+    const crowdingFilter = document.querySelector('[data-filter="crowding"].active').dataset.value;
+
+    let filtered = spacesData;
+
+    if (typeFilter !== 'all') {
+        filtered = filtered.filter(s => s.type === typeFilter);
+    }
+
+    if (crowdingFilter !== 'all') {
+        const [min, max] = crowdingFilter.split('-').map(Number);
+        filtered = filtered.filter(s => {
+            const level = Math.round(s.avg_crowding);
+            return max ? (level >= min && level <= max) : (level >= min);
+        });
+    }
+
+    // 更新显示
+    spacesData = filtered;
+    renderMarkers();
+    renderSpaceList();
+}
+
+// 搜索功能
+document.getElementById('searchInput').addEventListener('input', (e) => {
+    const keyword = e.target.value.toLowerCase();
+    const filtered = spacesData.filter(s =>
+        s.name.toLowerCase().includes(keyword) ||
+        s.location.toLowerCase().includes(keyword)
+    );
+
+    // 临时更新列表
+    const listContainer = document.getElementById('spaceList');
+    listContainer.innerHTML = filtered.map(space => `
+        <div class="space-card" onclick="focusOnSpace(${space.id})">
+            <div class="space-card-header">
+                <span class="space-name">${space.name}</span>
+                <span class="space-status ${getStatusClass(space.avg_crowding)}">
+                    ${getCrowdingText(space.avg_crowding)}
+                </span>
+            </div>
+            <div class="space-meta">
+                <span><i class="fas fa-map-marker-alt"></i>${space.location}</span>
+                <span><i class="fas fa-users"></i>${space.capacity}人</span>
+            </div>
+        </div>
+    `).join('');
+});
+
+// 刷新地图数据
+async function refreshMapData() {
+    document.getElementById('loadingOverlay').style.display = 'flex';
+    await loadSpacesData();
+}
+
+// 显示上报模态框
+function showReportModal() {
+    // 这里可以集成之前的上报功能
+    alert('上报功能开发中...');
+}
+
+// 导航到空间
+function navigateToSpace(spaceId) {
+    const space = spacesData.find(s => s.id === spaceId);
+    if (space && space.coordinates) {
+        // 使用高德地图导航
+        const url = `https://uri.amap.com/navigation?to=${space.coordinates[0]},${space.coordinates[1]},${space.name}&mode=walk&coordinate=gaode&callnative=1`;
+        window.open(url, '_blank');
+    }
+}
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', () => {
+    initMap();
+});
+</script>
+{% endblock %}
+
