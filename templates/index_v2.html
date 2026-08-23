@@ -1,0 +1,381 @@
+{% extends "base_v2.html" %}
+
+{% block title %}首页{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Hero区域 */
+    .hero-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 6rem 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="rgba(255,255,255,0.1)" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,138.7C960,139,1056,117,1152,101.3C1248,85,1344,75,1392,69.3L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') no-repeat bottom;
+        background-size: cover;
+        opacity: 0.3;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+        text-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .hero-subtitle {
+        font-size: 1.5rem;
+        font-weight: 300;
+        margin-bottom: 2rem;
+        opacity: 0.95;
+    }
+
+    .hero-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-hero {
+        padding: 1rem 2.5rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 50px;
+        border: none;
+        transition: all 0.3s;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-hero:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn-hero-primary {
+        background: white;
+        color: #667eea;
+    }
+
+    .btn-hero-outline {
+        background: transparent;
+        color: white;
+        border: 2px solid white;
+    }
+
+    /* 特性卡片 */
+    .features-section {
+        padding: 5rem 0;
+        background: #F9FAFB;
+    }
+
+    .section-title {
+        text-align: center;
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        color: #1F2937;
+    }
+
+    .section-subtitle {
+        text-align: center;
+        font-size: 1.2rem;
+        color: #6B7280;
+        margin-bottom: 4rem;
+    }
+
+    .feature-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2.5rem;
+        text-align: center;
+        transition: all 0.3s;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        height: 100%;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    .feature-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 2rem;
+        color: white;
+    }
+
+    .feature-icon-1 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .feature-icon-2 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+    .feature-icon-3 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+    .feature-icon-4 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+    .feature-icon-5 { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+    .feature-icon-6 { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
+
+    .feature-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: #1F2937;
+    }
+
+    .feature-description {
+        color: #6B7280;
+        line-height: 1.6;
+    }
+
+    /* 统计数据 */
+    .stats-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 4rem 0;
+    }
+
+    .stat-card {
+        text-align: center;
+        padding: 2rem;
+    }
+
+    .stat-number {
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+
+    /* CTA区域 */
+    .cta-section {
+        padding: 5rem 0;
+        background: white;
+    }
+
+    .cta-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 30px;
+        padding: 4rem;
+        text-align: center;
+        color: white;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    .cta-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+    }
+
+    .cta-description {
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
+        opacity: 0.95;
+    }
+
+    /* 响应式 */
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2.5rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+        }
+
+        .cta-card {
+            padding: 2.5rem 1.5rem;
+        }
+
+        .cta-title {
+            font-size: 2rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero区域 -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 hero-content">
+                <h1 class="hero-title animate__animated animate__fadeInUp">
+                    校园数字游民<br>活地图 2025
+                </h1>
+                <p class="hero-subtitle animate__animated animate__fadeInUp animate__delay-1s">
+                    东北大学浑南校区 · 实时众包 · 智能推荐
+                </p>
+                <p class="lead mb-4 animate__animated animate__fadeInUp animate__delay-2s">
+                    随时随地找到理想的学习空间，让校园生活更高效！
+                </p>
+                <div class="hero-buttons animate__animated animate__fadeInUp animate__delay-3s">
+                    <a href="{{ url_for('register') }}" class="btn btn-hero btn-hero-primary">
+                        <i class="fas fa-rocket me-2"></i>立即开始
+                    </a>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-hero btn-hero-outline">
+                        <i class="fas fa-map me-2"></i>查看地图
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center d-none d-lg-block">
+                <img src="https://via.placeholder.com/500x400/667eea/ffffff?text=Campus+Map" alt="Campus Map" class="img-fluid animate__animated animate__fadeInRight" style="border-radius: 20px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 特性区域 -->
+<section class="features-section">
+    <div class="container">
+        <h2 class="section-title">核心功能</h2>
+        <p class="section-subtitle">六大创新功能，打造全新校园体验</p>
+        
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card animate__animated animate__fadeInUp">
+                    <div class="feature-icon feature-icon-1">
+                        <i class="fas fa-map-marked-alt"></i>
+                    </div>
+                    <h3 class="feature-title">真实地图</h3>
+                    <p class="feature-description">
+                        集成高德地图API，显示东北大学浑南校区真实地图，精准定位每个空间位置
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card animate__animated animate__fadeInUp animate__delay-1s">
+                    <div class="feature-icon feature-icon-2">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3 class="feature-title">实时众包</h3>
+                    <p class="feature-description">
+                        用户实时上报空间状态，信息动态更新，告别过时的静态地图
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card animate__animated animate__fadeInUp animate__delay-2s">
+                    <div class="feature-icon feature-icon-3">
+                        <i class="fas fa-filter"></i>
+                    </div>
+                    <h3 class="feature-title">智能筛选</h3>
+                    <p class="feature-description">
+                        按空间类型、拥挤度、特殊需求筛选，快速找到最适合你的空间
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card animate__animated animate__fadeInUp">
+                    <div class="feature-icon feature-icon-4">
+                        <i class="fas fa-route"></i>
+                    </div>
+                    <h3 class="feature-title">路线导航</h3>
+                    <p class="feature-description">
+                        一键导航到目标空间，支持步行、骑行等多种导航方式
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card animate__animated animate__fadeInUp animate__delay-1s">
+                    <div class="feature-icon feature-icon-5">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <h3 class="feature-title">游戏化激励</h3>
+                    <p class="feature-description">
+                        积分系统+成就系统，让分享信息变得有趣，提升用户参与度
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card animate__animated animate__fadeInUp animate__delay-2s">
+                    <div class="feature-icon feature-icon-6">
+                        <i class="fas fa-fire"></i>
+                    </div>
+                    <h3 class="feature-title">热力图分析</h3>
+                    <p class="feature-description">
+                        可视化展示校园热门区域，帮助你避开拥挤，找到安静角落
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 统计数据 -->
+<section class="stats-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3 col-6">
+                <div class="stat-card">
+                    <div class="stat-number">10+</div>
+                    <div class="stat-label">校园空间</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-card">
+                    <div class="stat-number">100+</div>
+                    <div class="stat-label">活跃用户</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-card">
+                    <div class="stat-number">500+</div>
+                    <div class="stat-label">实时上报</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-card">
+                    <div class="stat-number">98%</div>
+                    <div class="stat-label">用户满意度</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA区域 -->
+<section class="cta-section">
+    <div class="container">
+        <div class="cta-card">
+            <h2 class="cta-title">准备好开始了吗？</h2>
+            <p class="cta-description">
+                加入我们，一起打造更智能的校园生活！
+            </p>
+            <a href="{{ url_for('register') }}" class="btn btn-hero btn-hero-primary btn-lg">
+                <i class="fas fa-user-plus me-2"></i>免费注册
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
