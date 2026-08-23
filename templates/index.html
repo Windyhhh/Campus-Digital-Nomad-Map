@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero-section bg-primary text-white py-5 mb-5">
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold mb-4">
+            <i class="fas fa-map-marked-alt me-3"></i>
+            校园数字游民"活地图"
+        </h1>
+        <p class="lead mb-4">
+            实时发现校园最佳学习空间，让每一次学习都有理想的环境
+        </p>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="d-flex justify-content-center gap-3">
+                    {% if not current_user.is_authenticated %}
+                    <a href="{{ url_for('register') }}" class="btn btn-warning btn-lg px-4">
+                        <i class="fas fa-user-plus me-2"></i>立即加入
+                    </a>
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg px-4">
+                        <i class="fas fa-sign-in-alt me-2"></i>登录
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-warning btn-lg px-4">
+                        <i class="fas fa-map me-2"></i>查看地图
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <h2 class="mb-4">核心功能</h2>
+            <p class="text-muted mb-5">三大核心功能，解决校园空间查找难题</p>
+        </div>
+    </div>
+    
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="feature-icon bg-primary text-white rounded-circle mx-auto mb-3">
+                        <i class="fas fa-map-marked-alt fa-2x"></i>
+                    </div>
+                    <h5 class="card-title">动态地图</h5>
+                    <p class="card-text">
+                        基于校园平面图，实时展示各区域拥挤度、噪音水平、电源可用性等关键信息
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="feature-icon bg-success text-white rounded-circle mx-auto mb-3">
+                        <i class="fas fa-map-pin fa-2x"></i>
+                    </div>
+                    <h5 class="card-title">位置上报</h5>
+                    <p class="card-text">
+                        快速打卡当前空间状态，添加标签和评价，为其他同学提供实时信息
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="feature-icon bg-warning text-white rounded-circle mx-auto mb-3">
+                        <i class="fas fa-filter fa-2x"></i>
+                    </div>
+                    <h5 class="card-title">个性化筛选</h5>
+                    <p class="card-text">
+                        按需求筛选推荐空间，如"找小组讨论室"、"找安静角落"等个性化需求
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <h2 class="mb-4">游戏化激励</h2>
+            <p class="text-muted mb-4">贡献信息获得积分，解锁成就，让分享变得有趣</p>
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card border-primary">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">
+                        <i class="fas fa-coins me-2"></i>积分系统
+                    </h5>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success me-2"></i>上报空间状态 +10分</li>
+                        <li><i class="fas fa-check text-success me-2"></i>添加有效标签 +5分</li>
+                        <li><i class="fas fa-check text-success me-2"></i>获得点赞评价 +3分</li>
+                        <li><i class="fas fa-check text-success me-2"></i>连续签到奖励 +20分</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card border-warning">
+                <div class="card-body">
+                    <h5 class="card-title text-warning">
+                        <i class="fas fa-trophy me-2"></i>成就系统
+                    </h5>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-medal text-warning me-2"></i>空间探索者 - 上报10个不同空间</li>
+                        <li><i class="fas fa-medal text-warning me-2"></i>信息贡献者 - 累计获得100个点赞</li>
+                        <li><i class="fas fa-medal text-warning me-2"></i>活跃用户 - 连续使用30天</li>
+                        <li><i class="fas fa-medal text-warning me-2"></i>校园达人 - 积分达到1000分</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.hero-section {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+}
+
+.feature-icon {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card {
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+</style>
+{% endblock %}
