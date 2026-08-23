@@ -1,0 +1,405 @@
+{% extends "base_v2.html" %}
+
+{% block title %}首页 - 校园活地图{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 4rem 0;
+        margin-bottom: 3rem;
+        border-radius: 0;
+    }
+
+    .hero-content {
+        text-align: center;
+    }
+
+    .hero-title {
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        animation: fadeInDown 0.8s ease-out;
+    }
+
+    .hero-subtitle {
+        font-size: 1.3rem;
+        opacity: 0.95;
+        margin-bottom: 2rem;
+        animation: fadeInUp 0.8s ease-out 0.2s both;
+    }
+
+    .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .feature-card {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: 2px solid transparent;
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+        border-color: #667eea;
+    }
+
+    .feature-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        display: inline-block;
+    }
+
+    .feature-icon.map-icon {
+        color: #667eea;
+    }
+
+    .feature-icon.calendar-icon {
+        color: #f59e0b;
+    }
+
+    .feature-icon.chart-icon {
+        color: #10b981;
+    }
+
+    .feature-icon.user-icon {
+        color: #ef4444;
+    }
+
+    .feature-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: #1f2937;
+    }
+
+    .feature-description {
+        color: #6b7280;
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+    }
+
+    .feature-link {
+        display: inline-block;
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+    .feature-link:hover {
+        color: #764ba2;
+        transform: translateX(4px);
+    }
+
+    .stats-section {
+        background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+        padding: 3rem 0;
+        margin: 3rem 0;
+        border-radius: 16px;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 1.5rem;
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #667eea;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        color: #6b7280;
+        font-size: 1rem;
+    }
+
+    .quick-access {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 2rem;
+    }
+
+    .quick-btn {
+        flex: 1;
+        min-width: 150px;
+        padding: 1rem;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .quick-btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .quick-btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(102, 126, 234, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    .quick-btn-secondary {
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+    }
+
+    .quick-btn-secondary:hover {
+        background: #667eea;
+        color: white;
+        text-decoration: none;
+    }
+
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1rem;
+        }
+
+        .feature-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .quick-access {
+            flex-direction: column;
+        }
+
+        .quick-btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container">
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <i class="fas fa-map-marked-alt me-2"></i>校园数字游民活地图
+            </h1>
+            <p class="hero-subtitle">
+                东北大学浑南校区 - 找到你的理想学习空间
+            </p>
+            {% if current_user.is_authenticated %}
+                <div class="quick-access">
+                    <a href="{{ url_for('dashboard_v2') }}" class="quick-btn quick-btn-primary">
+                        <i class="fas fa-map"></i>进入地图
+                    </a>
+                    <a href="{{ url_for('reservations_page') }}" class="quick-btn quick-btn-secondary">
+                        <i class="fas fa-calendar-check"></i>我的预约
+                    </a>
+                    <a href="{{ url_for('predictions_page') }}" class="quick-btn quick-btn-secondary">
+                        <i class="fas fa-chart-line"></i>智能预测
+                    </a>
+                </div>
+            {% else %}
+                <div class="quick-access">
+                    <a href="{{ url_for('login') }}" class="quick-btn quick-btn-primary">
+                        <i class="fas fa-sign-in-alt"></i>登录
+                    </a>
+                    <a href="{{ url_for('register') }}" class="quick-btn quick-btn-secondary">
+                        <i class="fas fa-user-plus"></i>注册
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- 功能卡片 -->
+    <div class="feature-grid">
+        <!-- 地图功能 -->
+        <div class="feature-card">
+            <div class="feature-icon map-icon">
+                <i class="fas fa-map"></i>
+            </div>
+            <h3 class="feature-title">实时地图</h3>
+            <p class="feature-description">
+                查看东北大学浑南校区的实时地图，了解各个空间的位置和当前状态。
+            </p>
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('dashboard_v2') }}" class="feature-link">
+                    进入地图 <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="feature-link">
+                    登录查看 <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            {% endif %}
+        </div>
+
+        <!-- 预约功能 -->
+        <div class="feature-card">
+            <div class="feature-icon calendar-icon">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <h3 class="feature-title">空间预约</h3>
+            <p class="feature-description">
+                预约你喜欢的学习空间，支持时间冲突检测和自动审核。
+            </p>
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('reservations_page') }}" class="feature-link">
+                    管理预约 <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="feature-link">
+                    登录预约 <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            {% endif %}
+        </div>
+
+        <!-- 智能预测 -->
+        <div class="feature-card">
+            <div class="feature-icon chart-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <h3 class="feature-title">智能预测</h3>
+            <p class="feature-description">
+                使用AI算法预测未来时段的空间拥挤度，帮助你选择最佳时间。
+            </p>
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('predictions_page') }}" class="feature-link">
+                    查看预测 <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="feature-link">
+                    登录查看 <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            {% endif %}
+        </div>
+
+        <!-- 个人中心 -->
+        <div class="feature-card">
+            <div class="feature-icon user-icon">
+                <i class="fas fa-user"></i>
+            </div>
+            <h3 class="feature-title">个人中心</h3>
+            <p class="feature-description">
+                管理个人信息、查看积分和成就、了解你的贡献。
+            </p>
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('profile') }}" class="feature-link">
+                    进入中心 <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="feature-link">
+                    登录查看 <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 统计信息 -->
+    {% if current_user.is_authenticated %}
+    <div class="stats-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <div class="stat-number" id="spaceCount">-</div>
+                        <div class="stat-label">可用空间</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <div class="stat-number" id="reservationCount">-</div>
+                        <div class="stat-label">我的预约</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <div class="stat-number" id="reportCount">-</div>
+                        <div class="stat-label">我的上报</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <div class="stat-number">{{ current_user.points }}</div>
+                        <div class="stat-label">我的积分</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    // 加载统计数据
+    {% if current_user.is_authenticated %}
+    async function loadStats() {
+        try {
+            // 获取空间数量
+            const spacesRes = await fetch('/api/spaces');
+            const spaces = await spacesRes.json();
+            document.getElementById('spaceCount').textContent = spaces.length;
+
+            // 获取预约数量
+            const reservationsRes = await fetch('/api/reservations');
+            const reservations = await reservationsRes.json();
+            document.getElementById('reservationCount').textContent = reservations.length;
+
+            // 获取上报数量
+            const statsRes = await fetch('/api/user/stats');
+            const stats = await statsRes.json();
+            document.getElementById('reportCount').textContent = stats.report_count;
+        } catch (error) {
+            console.error('加载统计数据失败:', error);
+        }
+    }
+
+    loadStats();
+    {% endif %}
+</script>
+{% endblock %}
+
