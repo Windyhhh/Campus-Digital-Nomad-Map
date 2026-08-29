@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🗺️ Campus-Digital-Nomad-Map
+# 校园数字游民地图 | Campus-Digital-Nomad-Map
 
 ### Flask full-stack campus space management with AI crowd prediction.
 
